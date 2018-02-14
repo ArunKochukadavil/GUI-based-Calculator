@@ -5,11 +5,10 @@
  */
 package calculator;
 
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.util.Stack;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -52,7 +51,8 @@ public class Calculator extends JFrame implements ActionListener {
         deci=new JButton(".");deci.addActionListener(this);
         io=new JTextField();
         io.setHorizontalAlignment(JTextField.RIGHT);
-        
+        io.setEditable(false);
+        io.setFont(new Font("Times new Roman",Font.BOLD,20));
         io.setBounds(10, 10, 352, 45);
         n7.setBounds(10, 60, 80, 50);
         n8.setBounds(100, 60, 80, 50);
@@ -182,10 +182,13 @@ public class Calculator extends JFrame implements ActionListener {
                 String temp="";
                 try
                 {
-                    io.setText(Double.parseDouble(s)+"");
+                    Double.parseDouble(s);
+                    BigDecimal d=new  BigDecimal(s);
+                    io.setText(d+"");
                 }
                 catch(Exception e)
                 {
+                    System.out.println(e.getMessage());
                     try
                     {
                         temp=PostFix.getResult(io.getText());
@@ -196,8 +199,10 @@ public class Calculator extends JFrame implements ActionListener {
                         }
                         else
                         {
-                            io.setText(temp);
-                            s=temp;
+                            BigDecimal b=new BigDecimal(Double.parseDouble(temp));
+                            System.out.println("temp : "+b);
+                            io.setText(b.toString());
+                            s=b.toString();
                         }
                     }
                     catch(Exception ex)
@@ -341,7 +346,7 @@ class PostFix {
         {
             sb.append(st.pop());
         }
-        System.out.println(sb.toString());
+        System.out.println("Postfix exp : "+sb.toString());
         res=evalPostFix(sb);
         return res;
     }
@@ -368,14 +373,18 @@ class PostFix {
     
     private static String evalPostFix(StringBuffer sb) {
         Stack<Double> st=new Stack<Double>();
-        System.out.println("Entered func");
+        Boolean neg=false;
+        System.out.println("Solving postfix : ");
         String t="";int k=0;
+        if(sb.charAt(0)=='-')
+            neg=true;
         try
         {
             for(int i=0;i<sb.length();i++)
             {
                 //System.out.println("looping : "+sb.charAt(i));
-                if(sb.charAt(i)==' ' || (sb.charAt(i)>='0'&& sb.charAt(i)<='9' || sb.charAt(i)=='.'))
+                
+                if(sb.charAt(i)==' ' || (i==0 && sb.charAt(0)=='-') ||(sb.charAt(i)>='0'&& sb.charAt(i)<='9' || sb.charAt(i)=='.'))
                 {
                     Boolean len=false,b=false,repeat=false;
                     if(sb.charAt(i)!=' ' && (sb.charAt(i)>='0' && sb.charAt(i)<='9' || sb.charAt(i)=='.'))
@@ -415,10 +424,20 @@ class PostFix {
                         if(b)
                         {
                             b=false;
+                            if(neg)
+                            {
+                                t="-"+t;
+                                neg=false;
+                            }
                             st.push(Double.parseDouble(t));
                         }
                         else
                         {
+                            if(neg)
+                            {
+                                t="-"+t;
+                                neg=false;
+                            }
                             st.push(Double.parseDouble(t));
                         }
                     }
@@ -450,7 +469,6 @@ class PostFix {
         catch(Exception e)
         {
             return e.toString();
-        }
-        
+        }    
     }
 }
